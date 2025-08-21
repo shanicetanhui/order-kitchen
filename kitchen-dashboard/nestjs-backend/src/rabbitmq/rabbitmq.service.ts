@@ -17,8 +17,9 @@ export class RabbitMQService implements OnModuleInit {
       await this.connectToRabbitMQ();
       await this.startOrderConsumer();
     } catch (error) {
-      this.logger.warn('RabbitMQ not available - continuing without message queue functionality');
-      this.logger.warn('This is normal for development without RabbitMQ running');
+      this.logger.error('RabbitMQ not available - exiting to restart container');
+      this.logger.error('Kitchen service requires RabbitMQ to function properly');
+      process.exit(1);
     }
   }
 
