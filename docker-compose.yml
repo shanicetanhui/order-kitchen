@@ -1,0 +1,85 @@
+services:
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: rabbitmq
+    ports:
+      - "9001:5672"
+      - "9002:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER:-admin}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS:-admin}
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: postgres
+    environment:
+      POSTGRES_DB: kitchen_db
+      POSTGRES_USER: kitchen_user
+      POSTGRES_PASSWORD: kitchen_pass
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  kitchen-backend:
+    build:
+      context: ./kitchen-dashboard/nestjs-backend
+      dockerfile: Dockerfile
+    container_name: kitchen-backend
+    environment:
+      NODE_ENV: production
+      RABBITMQ_URL: amqp://${RABBITMQ_DEFAULT_USER:-admin}:${RABBITMQ_DEFAULT_PASS:-admin}@rabbitmq:5672
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USERNAME: kitchen_user
+      DB_PASSWORD: kitchen_pass
+      DB_NAME: kitchen_db
+    depends_on:
+      - postgres
+      - rabbitmq
+    ports:
+      - "3000:3000"
+    restart: unless-stopped
+
+  kitchen-frontend:
+    build:
+      context: ./kitchen-dashboard/frontend
+      dockerfile: Dockerfile
+    container_name: kitchen-frontend
+    environment:
+      BACKEND_URL: http://kitchen-backend:3000
+      PORT: 3001
+    depends_on:
+      - kitchen-backend
+    ports:
+      - "3001:3001"
+    restart: unless-stopped
+
+  ordering-backend:
+    build:
+      context: ./ordering-app/backend
+      dockerfile: Dockerfile
+    container_name: ordering-backend
+    environment:
+      RABBITMQ_URL: amqp://${RABBITMQ_DEFAULT_USER:-admin}:${RABBITMQ_DEFAULT_PASS:-admin}@rabbitmq:5672
+    depends_on:
+      - rabbitmq
+    ports:
+      - "8001:3000"
+    restart: unless-stopped
+
+  ordering-frontend:
+    build:
+      context: ./ordering-app/frontend
+      dockerfile: Dockerfile
+    container_name: ordering-frontend
+    depends_on:
+      - ordering-backend
+    ports:
+      - "8002:80"
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
