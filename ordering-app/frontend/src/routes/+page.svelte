@@ -71,7 +71,7 @@
   });
 </script>
 
-<div class="background">
+<div>
   <h1
     style="text-align: center; font-family: caveat brush; color: #ffffff; font-size: 4rem;"
   >
@@ -139,16 +139,6 @@
 {/if}
 
 <style>
-  .background {
-    background-image: url("/images/background.png");
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    min-height: 100vh;
-    padding: 2rem;
-    box-sizing: border-box;
-  }
-
   .menu {
     display: flex;
     gap: 1rem;
