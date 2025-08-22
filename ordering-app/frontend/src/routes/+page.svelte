@@ -31,7 +31,7 @@
 
   onMount(() => {
     const interval = setInterval(async () => {
-      const res = await fetch("/api/status");
+      const res = await fetch("/api/orders/completed");
       if (res.ok) {
         const data = await res.json();
         if (data.length > statusUpdates.length) {

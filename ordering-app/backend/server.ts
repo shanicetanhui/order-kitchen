@@ -92,12 +92,12 @@ async function receiveMessages() {
 		channel.consume('orderStatus', (msg: any) => {
 			if (msg !== null) {
 				const orderStatus = JSON.parse(msg.content.toString());
-				console.log('Received order status:', orderStatus);
+				console.log('Received order status from orderStatus queue:', orderStatus);
 				channel.ack(msg);
-
 				completedOrders.push(orderStatus);
 			}
 		});
+
 	} catch (err) {
 		console.error('❌ Failed to connect to RabbitMQ for receiving messages:', err);
 		process.exit(1);
