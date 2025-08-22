@@ -2,6 +2,8 @@
   import { onMount } from "svelte";
   import "@fontsource/caveat-brush";
 
+  const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+
   let items = [
     { name: "Coffee", image: "/images/coffee.png" },
     { name: "Tea", image: "/images/tea.png" },
@@ -48,7 +50,7 @@
 
   onMount(() => {
     const interval = setInterval(async () => {
-      const res = await fetch("/api/orders/completed");
+      const res = await fetch(`${BACKEND_URL}/api/orders/completed`);
       if (res.ok) {
         const data = await res.json();
         if (data.length > statusUpdates.length) {
