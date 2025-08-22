@@ -18,6 +18,11 @@ app.use(express.json());
 
 let channel: any = null;
 
+// Simple display
+app.get('/', (req: any, res: any) => {
+	res.send('Ordering backend is running!');
+});
+
 // connect to RabbitMQ
 async function connectRabbit() {
 	try {
