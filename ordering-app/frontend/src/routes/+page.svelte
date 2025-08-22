@@ -15,8 +15,25 @@
   let quantity = 1;
   let submitted = false;
   let statusUpdates: { orderId: number; status: string }[] = [];
+  let statusQueue: { orderId: number; status: string }[] = [];
   let showStatusPopup = false;
   let latestStatus: { orderId: number; status: string } | null = null;
+
+  // Function to show next status in queue
+  function showNextStatus() {
+    if (statusQueue.length > 0) {
+      latestStatus = statusQueue.shift()!;
+      showStatusPopup = true;
+    }
+  }
+
+  function closePopup() {
+    showStatusPopup = false;
+    // Show next status after a short delay
+    setTimeout(() => {
+      showNextStatus();
+    }, 10);
+  }
 
   async function placeOrder() {
     if (!selectedItem || quantity < 1) return;
@@ -35,10 +52,16 @@
       if (res.ok) {
         const data = await res.json();
         if (data.length > statusUpdates.length) {
-          // New status update received
-          const newUpdate = data[data.length - 1];
-          latestStatus = newUpdate;
-          showStatusPopup = true;
+          // Get all new status updates
+          const newUpdates = data.slice(statusUpdates.length);
+
+          // Add new updates to the queue
+          statusQueue.push(...newUpdates);
+
+          // If no popup is currently showing, show the first one
+          if (!showStatusPopup) {
+            showNextStatus();
+          }
         }
         statusUpdates = data;
       }
@@ -110,9 +133,7 @@
     <div class="popup-content">
       <span class="popup-icon">🔔</span>
       <p>Order ID #{latestStatus.orderId} is {latestStatus.status}!</p>
-      <button class="close-btn" on:click={() => (showStatusPopup = false)}
-        >✕</button
-      >
+      <button class="close-btn" on:click={closePopup}>✕</button>
     </div>
   </div>
 {/if}
