@@ -32,25 +32,50 @@
       ordersActions.initialize(data.orders);
     }
 
-    // Setup SSE connection
-    eventSource = new EventSource("/api/orders/stream");
-
-    eventSource.onmessage = (event) => {
-      try {
-        const orderUpdate = JSON.parse(event.data);
-        ordersActions.handleOrderUpdate(orderUpdate);
-      } catch (error) {
-        console.error("Error parsing SSE data:", error);
+    function connectSSE() {
+      if (eventSource) {
+        eventSource.close();
       }
-    };
 
-    eventSource.onerror = (error) => {
-      console.error("SSE connection error:", error);
-      setTimeout(() => {
-        if (eventSource?.readyState === EventSource.CLOSED) {
-          eventSource = new EventSource("/api/orders/stream");
+      eventSource = new EventSource("/api/orders/stream");
+
+      eventSource.onopen = () => {
+        console.log("SSE connection established");
+      };
+
+      eventSource.onmessage = (event) => {
+        try {
+          const orderUpdate = JSON.parse(event.data);
+          ordersActions.handleOrderUpdate(orderUpdate);
+        } catch (error) {
+          console.error("Error parsing SSE data:", error);
         }
-      }, 5000);
+      };
+
+      eventSource.onerror = (error) => {
+        console.error("SSE connection error:", error);
+        eventSource?.close();
+
+        console.log("Reconnecting in 3 seconds...");
+        setTimeout(() => {
+          connectSSE();
+        }, 3000);
+      };
+    }
+
+    // Initial connection
+    connectSSE();
+
+    // Check connection health every 10 seconds and reconnect if needed
+    const healthCheck = setInterval(() => {
+      if (!eventSource || eventSource.readyState === EventSource.CLOSED) {
+        console.log("Connection lost, reconnecting...");
+        connectSSE();
+      }
+    }, 10000);
+
+    return () => {
+      clearInterval(healthCheck);
     };
   });
 
