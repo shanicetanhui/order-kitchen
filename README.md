@@ -2,8 +2,8 @@
 
 This repository contains both the Kitchen Dashboard and Ordering App, fully dockerized for easy local development and deployment.
 
-View Part 1 [here](https://github.com/shanicetanhui/ordering-app).
-View Part 2 [here](https://github.com/venicephua/kitchen-dashboard)
+View Part 1 (ordering-app) [here](https://github.com/shanicetanhui/ordering-app).  
+View Part 2 (kitchen-dashboard) [here](https://github.com/venicephua/kitchen-dashboard).
 
 ## Quick Start
 
